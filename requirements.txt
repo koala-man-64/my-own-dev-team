@@ -1,0 +1,15 @@
+azure-functions
+
+langchain
+langchain-core
+langchain-community
+langchain-openai
+openai
+langgraph           # if you’re going to model the workflow as a graph
+
+azure-storage-blob
+azure-identity
+
+pydantic
+python-dotenv
+requests
