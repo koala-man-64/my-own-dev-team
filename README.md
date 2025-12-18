@@ -91,6 +91,15 @@ Endpoints:
 - `GET /healthz`
 - `POST /chat` with JSON: `{ "question": "…", "top_k": 5 }`
 
+## Running tests
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
+
 ## 5) Deploy the FastAPI to Azure (Container Apps)
 
 This uses `az containerapp up` to build from local source and deploy:
