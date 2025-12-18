@@ -1,0 +1,2 @@
+- add chat-with-rudy role
+- upload resume
