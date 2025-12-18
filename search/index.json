@@ -1,0 +1,46 @@
+{
+  "name": "kb-index",
+  "fields": [
+    { "name": "chunkId", "type": "Edm.String", "key": true, "filterable": true, "retrievable": true },
+    { "name": "parentId", "type": "Edm.String", "filterable": true, "retrievable": true },
+
+    { "name": "title", "type": "Edm.String", "searchable": true, "filterable": true, "sortable": true, "retrievable": true },
+    { "name": "content", "type": "Edm.String", "searchable": true, "retrievable": true },
+
+    {
+      "name": "contentVector",
+      "type": "Collection(Edm.Single)",
+      "searchable": true,
+      "retrievable": false,
+      "stored": false,
+      "dimensions": 1536,
+      "vectorSearchProfile": "vprofile"
+    },
+
+    { "name": "sourcePath", "type": "Edm.String", "filterable": true, "retrievable": true }
+  ],
+  "vectorSearch": {
+    "algorithms": [
+      {
+        "name": "hnsw",
+        "kind": "hnsw",
+        "hnswParameters": { "m": 4, "efConstruction": 400, "efSearch": 100, "metric": "cosine" }
+      }
+    ],
+    "vectorizers": [
+      {
+        "name": "openai-vectorizer",
+        "kind": "azureOpenAI",
+        "azureOpenAIParameters": {
+          "resourceUri": "__AOAI_ENDPOINT__",
+          "apiKey": "__AOAI_KEY__",
+          "deploymentId": "__EMBED_DEPLOYMENT_NAME__",
+          "modelName": "__EMBED_MODEL_NAME__"
+        }
+      }
+    ],
+    "profiles": [
+      { "name": "vprofile", "algorithm": "hnsw", "vectorizer": "openai-vectorizer" }
+    ]
+  }
+}

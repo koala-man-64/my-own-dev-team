@@ -1,0 +1,7 @@
+{
+  "name": "kb-blob-ds",
+  "type": "azureblob",
+  "credentials": { "connectionString": "__STORAGE_CONNECTION_STRING__" },
+  "container": { "name": "kb-docs" }
+}
+

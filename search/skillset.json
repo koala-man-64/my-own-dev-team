@@ -1,0 +1,48 @@
+{
+  "name": "kb-skillset",
+  "description": "Chunk + embed docs from Blob Storage using Azure OpenAI (integrated vectorization).",
+  "skills": [
+    {
+      "@odata.type": "#Microsoft.Skills.Text.SplitSkill",
+      "name": "text-split",
+      "textSplitMode": "pages",
+      "maximumPageLength": 2000,
+      "pageOverlapLength": 500,
+      "maximumPagesToTake": 0,
+      "unit": "characters",
+      "defaultLanguageCode": "en",
+      "inputs": [{ "name": "text", "source": "/document/content" }],
+      "outputs": [{ "name": "textItems", "targetName": "chunks" }]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.AzureOpenAIEmbeddingSkill",
+      "name": "embed",
+      "resourceUri": "__AOAI_ENDPOINT__",
+      "apiKey": "__AOAI_KEY__",
+      "deploymentId": "__EMBED_DEPLOYMENT_NAME__",
+      "modelName": "__EMBED_MODEL_NAME__",
+      "dimensions": 1536,
+      "inputs": [{ "name": "text", "source": "/document/chunks/*" }],
+      "outputs": [{ "name": "embedding", "targetName": "chunkVector" }]
+    }
+  ],
+  "indexProjections": {
+    "selectors": [
+      {
+        "targetIndexName": "kb-index",
+        "parentKeyFieldName": "parentId",
+        "sourceContext": "/document/chunks/*",
+        "generatedKeyName": "chunkId",
+        "mappings": [
+          { "name": "content", "source": "/document/chunks/*" },
+          { "name": "contentVector", "source": "/document/chunks/*/chunkVector" },
+          { "name": "title", "source": "/document/metadata_storage_name" },
+          { "name": "sourcePath", "source": "/document/metadata_storage_path" }
+        ]
+      }
+    ],
+    "parameters": {
+      "projectionMode": "skipIndexingParentDocuments"
+    }
+  }
+}

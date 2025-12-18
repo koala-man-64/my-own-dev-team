@@ -1,0 +1,13 @@
+{
+  "name": "kb-indexer",
+  "dataSourceName": "kb-blob-ds",
+  "targetIndexName": "kb-index",
+  "skillsetName": "kb-skillset",
+  "schedule": { "interval": "PT1H" },
+  "parameters": {
+    "configuration": {
+      "dataToExtract": "contentAndMetadata"
+    }
+  }
+}
+
