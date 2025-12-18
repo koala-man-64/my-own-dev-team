@@ -7,6 +7,21 @@ This repo provisions a minimal RAG stack on Azure:
 - Storage Account + Blob container for documents
 - FastAPI app that queries Search and calls Azure OpenAI
 
+## Why this approach
+
+This is a “fully programmatic” RAG setup that splits cleanly into two parts:
+
+- **Control plane (IaC)**: create Azure resources (Search, OpenAI, Storage) reliably and repeatably.
+- **Data plane (Search objects)**: configure Search pipeline objects (datasource, skillset, index, indexer) that do the ingestion and vectorization.
+
+It also uses **integrated vectorization** so you can run vector search by sending *text* queries to Search, letting Search apply the index’s configured vectorizer at query-time.
+
+## What you’re building (high level)
+
+1. Upload files to Blob Storage (`kb-docs` container).
+2. An Azure AI Search indexer reads blobs, extracts text, splits into chunks, and creates embeddings for those chunks.
+3. Your FastAPI `/chat` endpoint sends a hybrid query to Search, receives top chunks, then asks Azure OpenAI to answer using those chunks as context.
+
 ## Prereqs
 
 - Azure CLI (`az`) with access to create resources
@@ -15,6 +30,17 @@ This repo provisions a minimal RAG stack on Azure:
 - PowerShell or Bash (choose the matching scripts)
 
 ## 1) Provision Azure resources (control plane)
+
+**What this step does**
+
+- Deploys `infra/main.bicep` to create:
+  - Azure AI Search service
+  - Azure OpenAI resource + 2 deployments (chat + embeddings)
+  - Storage account + `kb-docs` blob container
+
+**Why it matters**
+
+- These are the foundational services; the rest of the setup references their endpoints, names, and keys.
 
 ### Bash
 
@@ -32,6 +58,18 @@ chmod +x scripts/*.sh
 Both scripts prompt for required values (RG, location, model names/versions) and deploy `infra/main.bicep`.
 
 ## 2) Configure Search pipeline objects (data plane)
+
+**What this step does**
+
+- Creates/updates these Azure AI Search objects (via Search REST API):
+  - **Datasource**: points to the `kb-docs` blob container
+  - **Skillset**: splits text into chunks and generates embeddings
+  - **Index**: stores chunk text + metadata + vector field, and configures a vectorizer for query-time embedding
+  - **Indexer**: ties datasource + skillset + index together and runs on a schedule
+
+**Why it matters**
+
+- This is where “RAG ingestion” happens: chunking + embedding + indexing so your API can retrieve relevant passages later.
 
 If you answered “yes” during provisioning, this is already done. Otherwise run:
 
@@ -56,7 +94,23 @@ Templates live in `search/`:
 - `search/index.json`
 - `search/indexer.json`
 
+How the templates map to behavior:
+
+- `search/datasource.json`: blob connection and container name.
+- `search/skillset.json`: text splitting + Azure OpenAI embedding + index projections (write chunks into the target index).
+- `search/index.json`: defines searchable fields plus `contentVector` and a vectorizer (`openai-vectorizer`).
+- `search/indexer.json`: schedules ingestion (and can be run on-demand).
+
 ## 3) Upload docs + run the indexer
+
+**What this step does**
+
+- Uploads your files to Blob Storage (`kb-docs`).
+- Triggers the Search indexer to ingest blobs and populate the Search index with chunks + embeddings.
+
+**Why it matters**
+
+- Until the indexer runs, Search has nothing to retrieve.
 
 Put files under `docs/` (you create this folder), then:
 
@@ -76,6 +130,16 @@ Put files under `docs/` (you create this folder), then:
 
 ## 4) Run the FastAPI locally
 
+**What this step does**
+
+- Starts a local API that:
+  - queries Azure AI Search for top relevant chunks
+  - calls Azure OpenAI chat completion to generate a grounded answer
+
+**Why it matters**
+
+- This is the “serving layer” you can deploy behind a stable HTTP endpoint.
+
 Create a `.env` from `.env.example` (use outputs from `scripts/provision.*`):
 
 ```bash
@@ -93,6 +157,14 @@ Endpoints:
 
 ## Running tests
 
+**What this step does**
+
+- Runs unit tests for:
+  - settings/env parsing
+  - client construction (key vs AAD)
+  - retrieval request construction
+  - FastAPI endpoints and validation
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -103,6 +175,15 @@ pytest
 ## 5) Deploy the FastAPI to Azure (Container Apps)
 
 This uses `az containerapp up` to build from local source and deploy:
+
+**What this step does**
+
+- Builds the Dockerfile in this repo and deploys it to Azure Container Apps.
+- Sets the runtime environment variables the app needs (Search/OpenAI endpoints + keys, deployments, etc.).
+
+**Why it matters**
+
+- You get a public HTTPS endpoint for `/chat` without managing servers.
 
 ### Bash
 

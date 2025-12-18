@@ -24,6 +24,6 @@ jobs:
       - name: Run tests
         env:
           PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           pytest -q
-
