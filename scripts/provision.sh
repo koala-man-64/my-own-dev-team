@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+cd "$REPO_ROOT"
+
 prompt() {
   local var_name="$1"
   local label="$2"
@@ -52,10 +56,19 @@ EMBED_DEPLOYMENT_NAME="${EMBED_DEPLOYMENT_NAME:-embeddings}"
 prompt RG "Resource group" "rg-rag"
 prompt LOCATION "Location" "eastus"
 prompt NAME_PREFIX "Name prefix" "ragdemo"
-prompt CHAT_MODEL_NAME "Chat model name (e.g. gpt-4o-mini)"
-prompt CHAT_MODEL_VERSION "Chat model version"
-prompt EMBED_MODEL_NAME "Embedding model name (e.g. text-embedding-3-small)"
-prompt EMBED_MODEL_VERSION "Embedding model version"
+prompt CHAT_MODEL_NAME "Chat model name (e.g. gpt-4o-mini)" "gpt-4o-mini"
+CHAT_MODEL_VERSION_DEFAULT=""
+if [[ "${CHAT_MODEL_NAME}" == "gpt-4o-mini" ]]; then
+  CHAT_MODEL_VERSION_DEFAULT="2024-07-18"
+fi
+prompt CHAT_MODEL_VERSION "Chat model version (e.g. 2024-07-18)" "$CHAT_MODEL_VERSION_DEFAULT"
+
+prompt EMBED_MODEL_NAME "Embedding model name (e.g. text-embedding-3-small)" "text-embedding-3-small"
+EMBED_MODEL_VERSION_DEFAULT=""
+if [[ "${EMBED_MODEL_NAME}" == text-embedding-3-* ]]; then
+  EMBED_MODEL_VERSION_DEFAULT="1"
+fi
+prompt EMBED_MODEL_VERSION "Embedding model version (e.g. 1)" "$EMBED_MODEL_VERSION_DEFAULT"
 
 echo "Creating resource group..."
 az group create -n "$RG" -l "$LOCATION" >/dev/null

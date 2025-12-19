@@ -57,6 +57,8 @@ chmod +x scripts/*.sh
 
 Both scripts prompt for required values (RG, location, model names/versions) and deploy `infra/main.bicep`.
 
+If you just press Enter for the model prompts, the scripts default to `gpt-4o-mini` (`2024-07-18`) and `text-embedding-3-small` (`1`). If those aren’t available in your region/tenant, override them when prompted (or via env vars like `CHAT_MODEL_NAME`, `CHAT_MODEL_VERSION`, `EMBED_MODEL_NAME`, `EMBED_MODEL_VERSION`).
+
 ## 2) Configure Search pipeline objects (data plane)
 
 **What this step does**
