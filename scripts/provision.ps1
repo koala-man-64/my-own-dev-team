@@ -3,8 +3,8 @@ param(
   [string]$Rg,
   [string]$Location,
   [string]$NamePrefix,
-  [ValidateSet('S1','S2','S3')]
-  [string]$SearchSku = "S1",
+  [ValidateSet('S1','S2','S3','free','basic','standard','standard2','standard3','storage_optimized_l1','storage_optimized_l2')]
+  [string]$SearchSku = "standard",
 
   [string]$ChatModelName,
   [string]$ChatModelVersion,
@@ -45,8 +45,32 @@ try {
   if (-not $PSBoundParameters.ContainsKey('ChatDeploymentName') -and $env:CHAT_DEPLOYMENT_NAME) { $ChatDeploymentName = $env:CHAT_DEPLOYMENT_NAME }
   if (-not $PSBoundParameters.ContainsKey('EmbedDeploymentName') -and $env:EMBED_DEPLOYMENT_NAME) { $EmbedDeploymentName = $env:EMBED_DEPLOYMENT_NAME }
 
-  if ($SearchSku) { $SearchSku = $SearchSku.Trim().ToUpperInvariant() }
-  if ($SearchSku -notin @('S1','S2','S3')) { throw "Invalid SearchSku: $SearchSku (must be S1, S2, or S3)" }
+  $rawSearchSku = ""
+  if ($null -ne $SearchSku) { $rawSearchSku = $SearchSku.Trim() }
+  if ($rawSearchSku.Length -gt 0) {
+    $normalizedSearchSku = $rawSearchSku.ToLowerInvariant()
+    switch ($normalizedSearchSku) {
+      "s1" { $normalizedSearchSku = "standard" }
+      "s2" { $normalizedSearchSku = "standard2" }
+      "s3" { $normalizedSearchSku = "standard3" }
+    }
+
+    $allowedSkus = @(
+      "free",
+      "basic",
+      "standard",
+      "standard2",
+      "standard3",
+      "storage_optimized_l1",
+      "storage_optimized_l2"
+    )
+
+    if ($normalizedSearchSku -notin $allowedSkus) {
+      throw "Invalid SearchSku: $rawSearchSku (allowed: S1/S2/S3 or $($allowedSkus -join ', '))"
+    }
+
+    $SearchSku = $normalizedSearchSku
+  }
 
   $Rg = Prompt-IfEmpty $Rg "Resource group" "rg-rag"
   $Location = Prompt-IfEmpty $Location "Location" "eastus"

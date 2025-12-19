@@ -24,7 +24,7 @@ These are prompted for by `scripts/provision.sh` / `scripts/provision.ps1`:
 
 - **Azure scope**: `RG` (resource group), `LOCATION`
 - **Naming**: `NAME_PREFIX` (drives resource names)
-- **Search**: `SEARCH_SKU`
+- **Search**: `SEARCH_SKU` (`standard`, `standard2`, `standard3`; aliases `S1`, `S2`, `S3`)
 - **OpenAI deployments**:
   - chat: `CHAT_MODEL_NAME`, `CHAT_MODEL_VERSION`, `CHAT_DEPLOYMENT_NAME` (default `chat`)
   - embeddings: `EMBED_MODEL_NAME`, `EMBED_MODEL_VERSION`, `EMBED_DEPLOYMENT_NAME` (default `embeddings`)

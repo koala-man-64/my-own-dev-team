@@ -1,0 +1,68 @@
+{
+	"info": {
+		"_postman_id": "a815713b-1837-4d33-b436-15e884d5a15c",
+		"name": "Azure RAG API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{api_host}}/healthz",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"healthz"
+					]
+				},
+				"description": "Checks if the API is running."
+			},
+			"response": []
+		},
+		{
+			"name": "Chat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"question\": \"What is integrated vectorization?\",\n    \"top_k\": 3\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{api_host}}/chat",
+					"host": [
+						"{{api_host}}"
+					],
+					"path": [
+						"chat"
+					]
+				},
+				"description": "Sends a question to the RAG model and gets an answer."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "api_host",
+			"value": "http://127.0.0.1:8000",
+			"type": "string",
+			"description": "The base URL of the API. Change this to your deployed cloud URL when testing in the cloud."
+		}
+	]
+}

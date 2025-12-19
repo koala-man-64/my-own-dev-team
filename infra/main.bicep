@@ -8,17 +8,30 @@ param namePrefix string = 'ragdemo'
 param searchHostingMode string = 'default'
 
 @allowed([
+  // Back-compat (mapped to the standard tiers below)
   'S1'
   'S2'
   'S3'
+
+  // Azure AI Search SKU names
+  'free'
+  'basic'
+  'standard'
+  'standard2'
+  'standard3'
+  'storage_optimized_l1'
+  'storage_optimized_l2'
 ])
-param searchSku string = 'S1'
+param searchSku string = 'standard'
+
+var resolvedSearchSku = toLower(searchSku)
+var searchSkuName = resolvedSearchSku == 's1' ? 'standard' : resolvedSearchSku == 's2' ? 'standard2' : resolvedSearchSku == 's3' ? 'standard3' : resolvedSearchSku
 
 @minLength(2)
-param searchName string = '${namePrefix}-search'
+param searchName string = toLower('${namePrefix}-search-${uniqueString(resourceGroup().id)}')
 
 @minLength(2)
-param openaiName string = '${namePrefix}-openai'
+param openaiName string = toLower('${namePrefix}-openai-${uniqueString(resourceGroup().id)}')
 
 @minLength(3)
 param storageName string = toLower('${namePrefix}st${uniqueString(resourceGroup().id)}')
@@ -36,7 +49,7 @@ param embedModelVersion string
 resource search 'Microsoft.Search/searchServices@2023-11-01' = {
   name: searchName
   location: location
-  sku: { name: searchSku }
+  sku: { name: searchSkuName }
   properties: {
     replicaCount: 1
     partitionCount: 1

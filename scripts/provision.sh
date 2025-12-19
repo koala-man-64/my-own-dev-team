@@ -45,7 +45,16 @@ fi
 RG="${RG:-}"
 LOCATION="${LOCATION:-}"
 NAME_PREFIX="${NAME_PREFIX:-}"
-SEARCH_SKU="${SEARCH_SKU:-S1}"
+SEARCH_SKU="${SEARCH_SKU:-standard}"
+SEARCH_SKU_RAW="${SEARCH_SKU}"
+SEARCH_SKU="$(printf '%s' "$SEARCH_SKU" | tr '[:upper:]' '[:lower:]')"
+case "${SEARCH_SKU}" in
+  s1) SEARCH_SKU="standard" ;;
+  s2) SEARCH_SKU="standard2" ;;
+  s3) SEARCH_SKU="standard3" ;;
+  free|basic|standard|standard2|standard3|storage_optimized_l1|storage_optimized_l2) ;;
+  *) echo "Invalid SEARCH_SKU: ${SEARCH_SKU_RAW} (allowed: S1/S2/S3 or free/basic/standard/standard2/standard3/storage_optimized_l1/storage_optimized_l2)" >&2; exit 1 ;;
+esac
 CHAT_MODEL_NAME="${CHAT_MODEL_NAME:-}"
 CHAT_MODEL_VERSION="${CHAT_MODEL_VERSION:-}"
 EMBED_MODEL_NAME="${EMBED_MODEL_NAME:-}"

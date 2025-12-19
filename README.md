@@ -55,7 +55,7 @@ chmod +x scripts/*.sh
 ./scripts/provision.ps1
 ```
 
-Both scripts prompt for required values (RG, location, model names/versions) and deploy `infra/main.bicep`.
+Both scripts prompt for required values (RG, location, model names/versions) and deploy `infra/main.bicep`. Search/OpenAI resource names are auto-suffixed (deterministically) to avoid global name collisions; use the printed outputs for the exact names.
 
 If you just press Enter for the model prompts, the scripts default to `gpt-4o-mini` (`2024-07-18`) and `text-embedding-3-small` (`1`). If those aren’t available in your region/tenant, override them when prompted (or via env vars like `CHAT_MODEL_NAME`, `CHAT_MODEL_VERSION`, `EMBED_MODEL_NAME`, `EMBED_MODEL_VERSION`).
 
@@ -174,6 +174,16 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
+## Testing with Postman
+
+This project includes a [Postman collection](postman/api.postman_collection.json) for testing the API endpoints. You can import this collection into Postman to easily send requests to the API.
+
+The collection includes a variable `api_host` which is set to `http://127.0.0.1:8000` by default for local testing. If you are testing a deployed API in the cloud, you can change this variable to your cloud API's URL.
+
+The collection includes requests for the following endpoints:
+- `GET /healthz`
+- `POST /chat`
+
 ## 5) Deploy the FastAPI to Azure (Container Apps)
 
 This uses `az containerapp up` to build from local source and deploy:
@@ -211,6 +221,7 @@ If you run provisioning/deploy from GitHub Actions, configure one of these authe
 Non-secret variables you’ll typically want in GitHub Actions (as repo variables or workflow env):
 
 - `RG`, `LOCATION`, `NAME_PREFIX`, `SEARCH_SKU`
+  - `SEARCH_SKU`: use `standard`, `standard2`, `standard3` (aliases `S1`, `S2`, `S3`).
 - `CHAT_MODEL_NAME`, `CHAT_MODEL_VERSION`
 - `EMBED_MODEL_NAME`, `EMBED_MODEL_VERSION`, `EMBED_DIMENSIONS`
 - Optional overrides: `CHAT_DEPLOYMENT_NAME`, `EMBED_DEPLOYMENT_NAME`
